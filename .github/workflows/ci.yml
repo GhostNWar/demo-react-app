@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - feature/**
+      - develop
+      - main
     paths-ignore:
       - '.github/workflows/**'
   pull_request:
@@ -41,7 +43,7 @@ jobs:
         id: extract
         run: |
             if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-                BRANCH="${GITHUB_HEAD_REF}"
+                BRANCH="${GITHUB_BASE_REF}"
                 else
                 BRANCH="${GITHUB_REF#refs/heads/}"
             fi
