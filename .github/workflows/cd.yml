@@ -28,9 +28,9 @@ jobs:
           if [[ "$BRANCH" == "dev" ]]; then
             echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "test" ]]; then
-            echo "bucket=your-react-app-test" >> $GITHUB_OUTPUT
+            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
-            echo "bucket=your-react-app-prod" >> $GITHUB_OUTPUT
+            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
           else
             echo "Invalid branch"
             exit 1
