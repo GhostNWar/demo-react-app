@@ -1,9 +1,13 @@
-name: CI Workflow
+name: CI Workflow (DEMO REACT APP)
 
 on:
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'build/**'
+      - '.github/**'
     branches:
-      - feature/*
+      - feature/**
   pull_request:
     branches:
       - develop
@@ -14,21 +18,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Download GitHub repository’s code into the GitHub action runner so that workflow can use it
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node JS in the GitHub action runner
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
+      
+      - name: Installing dependencies
+        run: npm install
 
-      - run: npm install
+      - name: Running test cases
+        run: npm test
 
-      - run: npm test
+      - name: Creating Build
+        run: npm run build
 
-      - run: npm run build
-
-      - name: Upload build to temporary S3 path
-        run: aws s3 sync ./build s3://react-dev-artifact-bucket/${GITHUB_SHA}/ --delete
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
+      # - name: Upload build to temporary S3 path
+      #   run: aws s3 sync ./build s3://react-dev-artifact-bucket/${GITHUB_SHA}/ --delete
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_REGION: us-east-1
