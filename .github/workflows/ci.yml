@@ -42,7 +42,7 @@ jobs:
             BRANCH="${GITHUB_REF#refs/heads/}"
             echo "Detected branch: $BRANCH"
 
-            if [[ "$BRANCH" == feature/* ]]; then
+            if [[ "$BRANCH"  =~ ^feature/.* ]]; then
                echo "ENV=dev" >> $GITHUB_OUTPUT
             
             elif [[ "$BRANCH" == "develop" ]]; then
