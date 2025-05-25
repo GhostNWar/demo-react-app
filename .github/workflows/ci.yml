@@ -39,7 +39,7 @@ jobs:
       - name: Extract branch and set env/bucket
         id: extract
         run: |
-            BRANCH="${GITHUB_REF#refs/heads/"
+            BRANCH="${GITHUB_REF#refs/heads/}"
             echo "Detected branch: $BRANCH"
 
             if [[ "$BRANCH" == feature/* ]]; then
