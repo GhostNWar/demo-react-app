@@ -12,6 +12,8 @@ on:
       - main
     paths-ignore:
       - '.github/workflows/**'
+  workflow_dispatch:
+    
 
 jobs:
   ci:

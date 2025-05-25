@@ -1,18 +1,10 @@
 name: CD Workflow (DEMO REACT APP)
 
 on:
-  push:
-    branches:
-      - feature/**
-    paths-ignore:
-      - '.github/workflows/**'
-  pull_request:
-    branches:
-      - develop
-      - main
-    paths-ignore:
-      - '.github/workflows/**'
-
+  workflow_run:
+    workflows: ["CI Workflow (DEMO REACT APP)"]
+    types:
+      - completed
 
 jobs:
   cd:
