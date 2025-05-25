@@ -25,9 +25,9 @@ jobs:
         id: vars
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$BRANCH" == "dev" ]]; then
+          if [[ "$BRANCH" == "feature" ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "test" ]]; then
+          elif [[ "$BRANCH" == "develop" ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
