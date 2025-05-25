@@ -58,6 +58,8 @@ jobs:
             BUCKET="react-${ENV}-artifact-bucket"
             echo "env=$ENV" >> $GITHUB_OUTPUT
             echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
+            echo "Detected bucket: $bucket"
+
 
       - name: Upload build to temporary S3
         run: |
