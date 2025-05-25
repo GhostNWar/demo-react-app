@@ -26,11 +26,11 @@ jobs:
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
           if [[ "$BRANCH" == "dev" ]]; then
-            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
+            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "test" ]]; then
-            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
+            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
-            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
+            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
           else
             echo "Invalid branch"
             exit 1
