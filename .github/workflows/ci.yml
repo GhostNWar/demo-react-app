@@ -3,12 +3,12 @@ name: CI Workflow (DEMO REACT APP)
 on:
   push:
     paths-ignore:
-      - 'README.md'
-      - 'build/**'
-      - '.github/**'
+      - '.github/workflows/**'
     branches:
       - feature/**
   pull_request:
+    paths-ignore:
+      - '.github/workflows/**'
     branches:
       - develop
       - main
