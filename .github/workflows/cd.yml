@@ -17,3 +17,7 @@ on:
 jobs:
   cd:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Deployment workflow has been initiated
+        run: echo "Deployment workflow has been initiated!" 
