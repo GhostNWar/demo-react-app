@@ -1,0 +1,16 @@
+name: CD Workflow DEMO REACT APP
+
+on:
+  workflow_run:
+    workflows: ["CI Workflow DEMO REACT APP"]
+    types:
+      - completed
+
+jobs:
+  cd:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deployment workflow has been initiated
+        run: echo "Deployment workflow has been initiated!" 

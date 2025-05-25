@@ -1,4 +1,4 @@
-name: CI Workflow (DEMO REACT APP)
+name: CI Workflow DEMO REACT APP
 
 on:
   push:
@@ -12,6 +12,8 @@ on:
       - main
     paths-ignore:
       - '.github/workflows/**'
+  workflow_dispatch:
+
 
 jobs:
   ci:
