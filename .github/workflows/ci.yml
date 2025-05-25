@@ -1,32 +1,73 @@
-name: CI Workflow
+name: CI Workflow DEMO REACT APP
 
 on:
   push:
     branches:
-      - dev
-      - test
-      - main
+      - feature/**
+    paths-ignore:
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - develop
+    paths-ignore:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'test' || startsWith(github.ref, 'refs/heads/feature/') && 'dev' || 'default' }}
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Download GitHub repository’s code into the GitHub action runner so that workflow can use it
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node JS in the GitHub action runner
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
+      
+      - name: Installing dependencies
+        run: npm install
 
-      - run: npm install
+      - name: Running test cases
+        run: npm test
 
-      - run: npm test
+      - name: Creating Build
+        run: npm run build
 
-      - run: npm run build
+      - name: Extract branch and set env/bucket
+        id: extract
+        run: |
+            BRANCH="${GITHUB_REF#refs/heads/}"
+            echo "Detected branch: $BRANCH"
 
-      - name: Upload build to temporary S3 path
-        run: aws s3 sync ./build s3://react-dev-artifact-bucket/${GITHUB_SHA}/ --delete
+            if [[ "$BRANCH"  =~ ^feature/.* ]]; then
+               ENV="dev"
+               echo "dev env"
+            
+            elif [[ "$BRANCH" == "develop" ]]; then
+               ENV="test"
+               echo "test env"
+
+            elif [[ "$BRANCH" == "main" ]]; then
+               ENV="prod"
+            else
+               echo "Unknown branch: $BRANCH"
+               exit 1
+            fi
+
+            BUCKET="react-${ENV}-artifact-bucket"
+            echo "env=$ENV" >> $GITHUB_OUTPUT
+            echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
+            echo "Detected bucket: $BUCKET"
+
+
+      - name: Upload build to temporary S3
+        run: |
+          aws s3 sync build/ s3://${{ steps.extract.outputs.bucket }}/ --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
+          AWS_REGION: ${{ secrets.REGION }}

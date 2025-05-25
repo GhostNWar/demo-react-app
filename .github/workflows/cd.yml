@@ -1,48 +1,61 @@
-name: CD Workflow
+name: CD Workflow DEMO REACT APP
 
 on:
   workflow_run:
-    workflows: ["CI Workflow"]
+    workflows: ["CI Workflow DEMO REACT APP"]
     types:
       - completed
 
 jobs:
-  deploy:
+  cd:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    environment: ${{ github.event.workflow_run.head_branch == 'main' && 'prod' || github.event.workflow_run.head_branch == 'develop' && 'test' || startsWith(github.event.workflow_run.head_branch, 'feature/') && 'dev' || 'default' }}
+
+ 
 
     steps:
-      - name: Download build from S3
+      - name: Deployment workflow has been initiated
+        run: echo "Deployment workflow has been initiated!"
+
+      - name: Set target bucket based on branch
+        id: extract
         run: |
-          SHA=${{ github.event.workflow_run.head_sha }}
-          aws s3 sync s3://react-dev-artifact-bucket/$SHA ./build --delete
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            echo "Detected branch: $BRANCH"
+
+            if [[ "$BRANCH" == feature/* ]]; then
+               echo "deploy_bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
+               ENV="dev"
+                
+            elif [[ "$BRANCH" == "develop" ]]; then
+               echo "deploy_bucket=react-test-app-v1" >> $GITHUB_OUTPUT
+               ENV="test"
+
+            elif [[ "$BRANCH" == "main" ]]; then
+               echo "deploy_bucket=react-prod-app-v1" >> $GITHUB_OUTPUT
+               ENV="prod"
+            else
+               echo "Unknown branch: $BRANCH"
+               exit 1
+            fi
+
+            BUCKET="react-${ENV}-artifact-bucket"
+            echo "env=$ENV" >> $GITHUB_OUTPUT
+            echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
+
+      - name: Download build from S3 bucket
+        run: |
+          aws s3 sync s3://${{ steps.extract.outputs.bucket }}/ ./build
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
+          AWS_REGION: ${{ secrets.REGION }}
 
-      - name: Determine S3 target bucket
-        id: vars
+      - name: Deploy build to S3 (deployment bucket)
         run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$BRANCH" == "dev" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "test" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "main" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          else
-            echo "Invalid branch"
-            exit 1
-          fi
-
-      - name: Deploy to S3
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --delete
+          aws s3 sync ./build s3://${{ steps.extract.outputs.deploy_bucket }}/ --delete
         env:
-          AWS_S3_BUCKET: ${{ steps.vars.outputs.bucket }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          SOURCE_DIR: build
+          AWS_REGION: ${{ secrets.REGION }}
