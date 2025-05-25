@@ -36,6 +36,16 @@ jobs:
                echo "Unknown branch: $BRANCH"
                exit 1
             fi
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: react-build
+          path: build
+
+      - name: List contents of build folder
+        run: ls -R build
+        
       - name: Deploy to S3 (${{ steps.set-bucket.outputs.env }})
         run: |
           echo "Deploying to bucket: ${{ steps.set-bucket.outputs.bucket }}"
