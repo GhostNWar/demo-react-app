@@ -22,12 +22,13 @@ jobs:
           AWS_REGION: us-east-1
 
       - name: Determine S3 target bucket
-        id: vars
+        id: vars 
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$BRANCH" == "dev" ]]; then
+          echo "Detected branch: $BRANCH"
+          if [[ "$BRANCH" =~ ^feature/ ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "test" ]]; then
+          elif [[ "$BRANCH" == "develop" ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
             echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
