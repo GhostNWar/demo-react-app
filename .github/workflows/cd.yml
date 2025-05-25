@@ -1,8 +1,8 @@
-name: CD Workflow (DEMO REACT APP)
+name: CD Workflow DEMO REACT APP
 
 on:
   workflow_run:
-    workflows: ["CI Workflow (DEMO REACT APP)"]
+    workflows: ["CI Workflow DEMO REACT APP"]
     types:
       - completed
 
