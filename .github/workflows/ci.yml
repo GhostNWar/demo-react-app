@@ -1,28 +1,37 @@
-name: CI Pipeline
+name: CI Workflow
 
 on:
   push:
     branches:
-      - main
-      - develop
+      - dev
       - test
+      - main
 
 jobs:
   ci:
+    name: Run Tests and Build
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
 
-      - name: Install Dependencies
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
         run: npm install
 
-      - name: Run Tests (CI)
+      - name: Run tests
         run: npm test
 
-      - name: Trigger CD Workflow
-        if: success()
-        run: |
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/actions/workflows/cd.yml/dispatches \
-          -d '{"ref":"${{ github.ref }}"}'
+      - name: Build React app
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: build

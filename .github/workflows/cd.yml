@@ -1,31 +1,44 @@
-name: CD Pipeline
+name: CD Workflow
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI Workflow"]
+    types:
+      - completed
 
 jobs:
-  cd:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: react-build
+          path: build
 
-      - name: Build React App
-        run: npm run build
-
-      - name: Configure AWS CLI
+      - name: Determine S3 bucket
+        id: vars
         run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set default.region your-region
+          if [[ "${{ github.event.workflow_run.head_branch }}" == "dev" ]]; then
+            echo "bucket=your-react-app-dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "test" ]]; then
+            echo "bucket=your-react-app-test" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "main" ]]; then
+            echo "bucket=your-react-app-prod" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid branch"
+            exit 1
+          fi
 
       - name: Deploy to S3
-        run: |
-          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
-          if [[ "$BRANCH_NAME" == "develop" ]]; then
-            aws s3 sync build/ s3://your-dev-bucket --delete
-          elif [[ "$BRANCH_NAME" == "test" ]]; then
-            aws s3 sync build/ s3://your-test-bucket --delete
-          elif [[ "$BRANCH_NAME" == "main" ]]; then
-            aws s3 sync build/ s3://your-prod-bucket --delete
-          fi
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --delete
+        env:
+          AWS_S3_BUCKET: ${{ steps.vars.outputs.bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          SOURCE_DIR: build
