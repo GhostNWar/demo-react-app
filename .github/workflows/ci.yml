@@ -40,7 +40,11 @@ jobs:
       - name: Extract branch and set env/bucket
         id: extract
         run: |
-            BRANCH="${GITHUB_REF#refs/heads/}"
+            if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+                BRANCH="${GITHUB_HEAD_REF}"
+                else
+                BRANCH="${GITHUB_REF#refs/heads/}"
+            fi
             echo "Detected branch: $BRANCH"
 
             if [[ "$BRANCH"  =~ ^feature/.* ]]; then
