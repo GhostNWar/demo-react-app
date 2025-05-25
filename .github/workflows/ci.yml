@@ -17,12 +17,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    environment: ${{ 
-                    github.ref == 'refs/heads/main' && 'prod' || 
-                    github.ref == 'refs/heads/develop' && 'test' || 
-                    startsWith(github.ref, 'refs/heads/feature/') && 'dev' || 
-                    'default' 
-                  }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'test' || startsWith(github.ref, 'refs/heads/feature/') && 'dev' || 'default' }}
+    
     steps:
       - name: Download GitHub repository’s code into the GitHub action runner so that workflow can use it
         uses: actions/checkout@v4
