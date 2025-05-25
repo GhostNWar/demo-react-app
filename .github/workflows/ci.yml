@@ -36,3 +36,9 @@ jobs:
 
       - name: Creating Build
         run: npm run build
+      
+      - name: Upload React build
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: build/

@@ -13,4 +13,29 @@ jobs:
 
     steps:
       - name: Deployment workflow has been initiated
-        run: echo "Deployment workflow has been initiated!" 
+        run: echo "Deployment workflow has been initiated!"
+
+      - name: Set target bucket based on branch
+        id: set-bucket
+        run: |
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            echo "Detected branch: $BRANCH"
+
+            if [[ "$BRANCH" == feature/* ]]; then
+               echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
+               echo "env=Development" >> $GITHUB_OUTPUT
+            
+            elif [[ "$BRANCH" == "develop" ]]; then
+               echo "bucket=react-test-app-v1" >> $GITHUB_OUTPUT
+               echo "env=Test" >> $GITHUB_OUTPUT
+
+            elif [[ "$BRANCH" == "main" ]]; then
+               echo "bucket=react-prod-app-v1" >> $GITHUB_OUTPUT
+               echo "env=Production" >> $GITHUB_OUTPUT
+            else
+               echo "Unknown branch: $BRANCH"
+               exit 1
+            fi
+      - name: Deploy to S3 (${{ steps.set-bucket.outputs.env }})
+        run: |
+          echo "Deploying to bucket: ${{ steps.set-bucket.outputs.bucket }}"
