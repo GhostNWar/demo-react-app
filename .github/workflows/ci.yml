@@ -43,15 +43,15 @@ jobs:
             echo "Detected branch: $BRANCH"
 
             if [[ "$BRANCH"  =~ ^feature/.* ]]; then
-               echo "ENV=dev" >> $GITHUB_OUTPUT
+               ENV="dev"
                echo "dev env"
             
             elif [[ "$BRANCH" == "develop" ]]; then
-               echo "ENV=test" >> $GITHUB_OUTPUT
+               ENV="dev"
                echo "test env"
 
             elif [[ "$BRANCH" == "main" ]]; then
-               echo "ENV=prod" >> $GITHUB_OUTPUT
+               ENV="dev"
             else
                echo "Unknown branch: $BRANCH"
                exit 1
