@@ -39,3 +39,8 @@ jobs:
       - name: Deploy to S3 (${{ steps.set-bucket.outputs.env }})
         run: |
           echo "Deploying to bucket: ${{ steps.set-bucket.outputs.bucket }}"
+          aws s3 sync build/ s3://${{ steps.set-bucket.outputs.bucket }} --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
