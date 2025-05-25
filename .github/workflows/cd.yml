@@ -10,6 +10,13 @@ jobs:
   cd:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    environment: ${{ 
+                    github.ref == 'refs/heads/main' && 'prod' || 
+                    github.ref == 'refs/heads/develop' && 'test' || 
+                    startsWith(github.ref, 'refs/heads/feature/') && 'dev' || 
+                    'default' 
+                  }}
+ 
 
     steps:
       - name: Deployment workflow has been initiated
@@ -27,11 +34,11 @@ jobs:
                 
             elif [[ "$BRANCH" == "develop" ]]; then
                echo "deploy_bucket=react-test-app-v1" >> $GITHUB_OUTPUT
-               ENV="dev"
+               ENV="test"
 
             elif [[ "$BRANCH" == "main" ]]; then
                echo "deploy_bucket=react-prod-app-v1" >> $GITHUB_OUTPUT
-               ENV="dev"
+               ENV="prod"
             else
                echo "Unknown branch: $BRANCH"
                exit 1
@@ -47,10 +54,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: List contents of build folder
-        run: ls -R build
+          AWS_REGION: ${{ secrets.REGION }}
 
       - name: Deploy build to S3 (deployment bucket)
         run: |
@@ -58,4 +62,4 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_REGION: ${{ secrets.REGION }}
