@@ -23,15 +23,15 @@ jobs:
 
             if [[ "$BRANCH" == feature/* ]]; then
                echo "deploy_bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-               echo "ENV=dev" >> $GITHUB_OUTPUT
+               ENV="dev"
                 
             elif [[ "$BRANCH" == "develop" ]]; then
                echo "deploy_bucket=react-test-app-v1" >> $GITHUB_OUTPUT
-               echo "ENV=test" >> $GITHUB_OUTPUT
+               ENV="dev"
 
             elif [[ "$BRANCH" == "main" ]]; then
                echo "deploy_bucket=react-prod-app-v1" >> $GITHUB_OUTPUT
-               echo "ENV=prod" >> $GITHUB_OUTPUT
+               ENV="dev"
             else
                echo "Unknown branch: $BRANCH"
                exit 1

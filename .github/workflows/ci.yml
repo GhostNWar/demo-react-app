@@ -39,17 +39,19 @@ jobs:
       - name: Extract branch and set env/bucket
         id: extract
         run: |
-            BRANCH="${GITHUB_REF#refs/heads/"
+            BRANCH="${GITHUB_REF#refs/heads/}"
             echo "Detected branch: $BRANCH"
 
-            if [[ "$BRANCH" == feature/* ]]; then
-               echo "ENV=dev" >> $GITHUB_OUTPUT
+            if [[ "$BRANCH"  =~ ^feature/.* ]]; then
+               ENV="dev"
+               echo "dev env"
             
             elif [[ "$BRANCH" == "develop" ]]; then
-               echo "ENV=dev" >> $GITHUB_OUTPUT
+               ENV="dev"
+               echo "test env"
 
             elif [[ "$BRANCH" == "main" ]]; then
-               echo "ENV=prod" >> $GITHUB_OUTPUT
+               ENV="dev"
             else
                echo "Unknown branch: $BRANCH"
                exit 1
@@ -58,6 +60,8 @@ jobs:
             BUCKET="react-${ENV}-artifact-bucket"
             echo "env=$ENV" >> $GITHUB_OUTPUT
             echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
+            echo "Detected bucket: $BUCKET"
+
 
       - name: Upload build to temporary S3
         run: |
