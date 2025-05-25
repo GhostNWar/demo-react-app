@@ -1,52 +1,31 @@
-name: React App CD
+name: CD Pipeline
 
 on:
-  push:
-    branches:
-      - dev
-      - test
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  cd:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build React app
+      - name: Build React App
         run: npm run build
 
-      - name: Determine S3 bucket
-        id: vars
+      - name: Configure AWS CLI
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/test" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "bucket=react-dev-app-v1" >> $GITHUB_OUTPUT
-          else
-            echo "Invalid branch. Skipping deployment."
-            exit 1
-          fi
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region your-region
 
       - name: Deploy to S3
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --delete
-        env:
-          AWS_S3_BUCKET: ${{ steps.vars.outputs.bucket }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          SOURCE_DIR: build
+        run: |
+          BRANCH_NAME=$(echo $GITHUB_REF | sed 's/refs\/heads\///')
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            aws s3 sync build/ s3://your-dev-bucket --delete
+          elif [[ "$BRANCH_NAME" == "test" ]]; then
+            aws s3 sync build/ s3://your-test-bucket --delete
+          elif [[ "$BRANCH_NAME" == "main" ]]; then
+            aws s3 sync build/ s3://your-prod-bucket --delete
+          fi
